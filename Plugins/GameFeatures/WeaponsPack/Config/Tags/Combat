@@ -1,0 +1,14 @@
+[/Script/GameplayTags.GameplayTagsList]
+GameplayTagList=(Tag="Grenade",DevComment="")
+GameplayTagList=(Tag="Gun.SelectiveFire.BurstMode",DevComment="")
+GameplayTagList=(Tag="Gun.SelectiveFire.FullyAutomatic",DevComment="")
+GameplayTagList=(Tag="Gun.SelectiveFire.SemiAutomatic",DevComment="")
+GameplayTagList=(Tag="Gun.SelectiveFire.SingleShoot",DevComment="")
+GameplayTagList=(Tag="Gun.Type",DevComment="")
+GameplayTagList=(Tag="Gun.Type.AssaultRifle",DevComment="")
+GameplayTagList=(Tag="Gun.Type.HandGun",DevComment="")
+GameplayTagList=(Tag="Gun.Type.ShootGun",DevComment="")
+GameplayTagList=(Tag="Gun.Type.SniperRifle",DevComment="")
+GameplayTagList=(Tag="Gun.Type.SubMachineGun",DevComment="")
+GameplayTagList=(Tag="Knife",DevComment="")
+
