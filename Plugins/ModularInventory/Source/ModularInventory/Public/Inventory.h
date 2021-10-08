@@ -7,8 +7,6 @@
 #include "Components/ActorComponent.h"
 #include "Inventory.generated.h"
 
-
-class IItem;
 UCLASS( ClassGroup=(Custom), Abstract, Blueprintable, meta=(BlueprintSpawnableComponent) )
 class MODULARINVENTORY_API UInventory : public UActorComponent{
 	
@@ -24,16 +22,14 @@ class MODULARINVENTORY_API UInventory : public UActorComponent{
 	
 	protected:
 		virtual void BeginPlay() override;
-		bool IsStackableAdd(FItemData ItemData, int& RestAmount);
+		bool IsStackableAdd(AActor* ActorItem, UPrimaryItemData* ItemData);
 		
 	public:	
 		virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 		virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 		UFUNCTION(BlueprintCallable,BlueprintAuthorityOnly, Category="Inventory")
-		bool TryAddItem(FItemData ItemData, int& RestAmount);
+		bool TryAddItem(AActor* ActorItem);
 		UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
-		bool TryRemoveItemWithTags(TArray<FItemData>& ItemSlots, FGameplayTagContainer ItemTags,int Amount = 1);
-		UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
-		bool TryRemoveItemAtIndex(FItemData& ItemData, int Index,int Amount = 1);
+		bool TryRemoveItemWithTags(TArray<FItemData>& ItemSlots, FGameplayTagContainer ItemTags,int Amount);
 };

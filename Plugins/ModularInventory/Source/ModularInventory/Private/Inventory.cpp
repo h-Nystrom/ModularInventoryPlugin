@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Inventory.h"
-#include "Stackable.h"
+
+#include "I_Item.h"
+#include "I_Stackable.h"
 #include "Net/UnrealNetwork.h"
 
 //TODO: Bug test and Refactor code...
@@ -24,14 +26,17 @@ void UInventory::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-bool UInventory::TryAddItem(const FItemData ItemData, int& RestAmount){
-    if(ItemData.Amount <= 0 || ItemData.PrimaryItemData == nullptr)
+bool UInventory::TryAddItem(AActor* ActorItem){
+	if(ActorItem == nullptr || !ActorItem->Implements<UI_Item>()){
+  		UE_LOG(LogTemp, Display,TEXT("Null or doesn't implement I_Item!"));//TODO: Remove!
 		return false;
-	if(IsStackableAdd(ItemData, RestAmount))
+	}
+	const auto ItemData = II_Item::Execute_GetItemData(ActorItem);
+	if(IsStackableAdd(ActorItem, ItemData))
 		return true;		
 	if(Slots.Num() >= MaxStorage)
 		return false;
-	Slots.Add(FItemData(ItemData.PrimaryItemData, ItemData.Amount));
+	Slots.Add(FItemData(ItemData, 1));
 	return true;
 }
 
@@ -56,48 +61,32 @@ bool UInventory::TryRemoveItemWithTags(TArray<FItemData>& ItemSlots, const FGame
 			Slots[i].Amount -= MaxRemoveAmount;
 			AmountToRemove -= MaxRemoveAmount;
 	}
-	return ItemSlots.IsEmpty();
+	return !ItemSlots.IsEmpty();
 }
-
-bool UInventory::TryRemoveItemAtIndex(FItemData& ItemData, const int Index, const int Amount){
-	if(Amount <= 0 || Slots.IsEmpty() || Slots.Num() < Index+1 || Slots[Index].PrimaryItemData == nullptr)
+bool UInventory::IsStackableAdd(AActor* ActorItem, UPrimaryItemData* ItemData){
+	if(!ActorItem->Implements<UI_Stackable>())
 		return false;
-	if(Slots[Index].PrimaryItemData->Implements<UStackable>()){
-		if(Amount <= 0)
-			return false;
-		const auto MaxRemoveAmount = Slots[Index].Amount - Amount;
-		if(MaxRemoveAmount <= 0){
-			ItemData = Slots[Index];
-			Slots.RemoveAt(Index);
-			return true;
-		}
-		ItemData = FItemData(Slots[Index].PrimaryItemData, MaxRemoveAmount);
-		Slots[Index].Amount -= MaxRemoveAmount;
-		return true;
-	}
-	ItemData = Slots[Index];
-	Slots.RemoveAt(Index);
-	return true;
-}
-bool UInventory::IsStackableAdd(FItemData ItemData, int& RestAmount){
-	if(!ItemData.PrimaryItemData->Implements<UStackable>())
-		return false;
-	const auto MaxStack = IStackable::Execute_GetMaxStack(ItemData.PrimaryItemData);
-	
+	//TODO: Test code...
+	const auto MaxStack = II_Stackable::Execute_GetMaxStack(ActorItem);
+	auto Amount =  II_Stackable::Execute_GetCurrentAmount(ActorItem);
 	for (int i = 0; i < Slots.Num(); i++){
-		if(GetTypeHash(Slots[i].PrimaryItemData->GetClass()) == GetTypeHash(ItemData.PrimaryItemData->GetClass())){
+		if(GetTypeHash(Slots[i].PrimaryItemData->GetClass()) == GetTypeHash(ItemData)){
 			if(Slots[i].Amount >= MaxStack)
 				continue;
 			UE_LOG(LogTemp, Display,TEXT("Found an item to add too!"));//TODO: Remove!
 			const auto MaxAmount = MaxStack - Slots[i].Amount;
-			if(MaxAmount >= ItemData.Amount){
-				Slots[i].Amount += ItemData.Amount;
+			if(MaxAmount >= Amount){
+				Slots[i].Amount += Amount;
 				return true;
 			}
-			ItemData.Amount -= MaxAmount;
+			Amount -= MaxAmount;
 		}
 	}
-	RestAmount = ItemData.Amount;
-	return false;
+	if(Slots.Num() >= MaxStorage){
+		II_Stackable::Execute_SetCurrentAmount(ActorItem,Amount);
+		return false;
+	}
+	Slots.Add(FItemData(ItemData, Amount));
+	return true;
 }
 
