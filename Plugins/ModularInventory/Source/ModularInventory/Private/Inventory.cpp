@@ -28,7 +28,7 @@ void UInventory::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompo
 
 bool UInventory::TryAddItem(AActor* ActorItem){
 	if(ActorItem == nullptr || !ActorItem->Implements<UI_Item>()){
-  		UE_LOG(LogTemp, Display,TEXT("Null or doesn't implement I_Item!"));//TODO: Remove!
+  		UE_LOG(LogTemp, Display,TEXT("Null or doesn't implement I_Item!"));
 		return false;
 	}
 	const auto ItemData = II_Item::Execute_GetItemData(ActorItem);
